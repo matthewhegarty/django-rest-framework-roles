@@ -29,8 +29,9 @@ class RoleViewSetMixin(object):
     def _call_role_fn(self, fn, *args, **kwargs):
         """Attempts to call a role-scoped method"""
         try:
-            role_name = self._get_role(self.request.user)
-            role_fn = "{}_for_{}".format(fn, role_name)
+            if not getattr(self, '_role_name', None):
+                self._role_name = self._get_role(self.request.user)
+            role_fn = "{}_for_{}".format(fn, self._role_name)
             return getattr(self, role_fn)(*args, **kwargs)
         except (AttributeError, RoleError):
             return getattr(super(RoleViewSetMixin, self), fn)(*args, **kwargs)
